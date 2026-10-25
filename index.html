@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Critters World - El Juego Definitivo</title>
+    <style>
+        /* ==========================================================================
+           1. ESTILOS BASE E IDENTIDAD VISUAL (ESTILO BLOOKET)
+           ========================================================================== */
+        :root {
+            --bg-dark: #1d1447;
+            --purple-main: #3f2b96;
+            --purple-dark: #2c1e6b;
+            --box-bg-light: #ffffff;
+            --text-dark: #3a3a3a;
+            --btn-green: #2ecc71;
+            --btn-green-hover: #27ae60;
+            --btn-blue: #3498db;
+            --btn-blue-hover: #2980b9;
+            --danger-red: #e74c3c;
+            --celestial-gold: #f1c40f;
+            --celestial-green: #2ec4b6;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Nunito', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(circle, var(--purple-main) 0%, var(--bg-dark) 100%);
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* BANNER SELECTOR PARA LA DEMOSTRACIÓN */
+        .demo-nav {
+            background: #110d26;
+            padding: 8px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            border-bottom: 2px solid var(--celestial-green);
+            z-index: 9999;
+            position: relative;
+        }
+        .demo-btn {
+            background: var(--purple-main);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .demo-btn:hover { background: var(--celestial-green); color: #000; }
+
+        /* CONTROL DE PANTALLAS */
+        .screen { display: none; height: calc(100vh - 38px); }
+        .screen.active { display: block; }
+
+        /* BARRA SUPERIOR GENERAL */
+        .top-bar {
+            background-color: var(--purple-dark);
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
+            border-bottom: 3px solid rgba(255,255,255,0.1);
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            background: linear-gradient(45deg, #00f2fe, #4facfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .stats { display: flex; gap: 20px; font-weight: bold; font-size: 18px; }
+        .stat-box {
+            background-color: rgba(255,255,255,0.1);
+            padding: 8px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        /* ESTRUCTURA DE PANELES LATERIALES */
+        .main-container { display: flex; height: calc(100% - 73px); }
+        .sidebar {
+            width: 240px;
+            background-color: rgba(44, 30, 107, 0.5);
+            padding: 30px 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            border-right: 2px solid rgba(255,255,255,0.05);
+        }
+        .nav-btn {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            font-size: 15px;
+            font-weight: bold;
+            text-align: left;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+        }
+        .nav-btn.play { background-color: var(--btn-green); box-shadow: 0 4px 0 #27ae60; }
+        .content-area { flex: 1; padding: 40px; display: flex; gap: 40px; justify-content: center; align-items: center; position: relative; }
+
+        /* TARJETAS DE CRITTERS */
+        .critter-display {
+            background-color: rgba(255,255,255,0.08);
+            border: 3px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            width: 320px;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        }
+        .frankenstein-card {
+            border: 4px solid #9b59b6;
+            animation: borderGlow 2s infinite alternate, macarenaDance 0.8s infinite alternate;
+        }
+        .avatar-img { font-size: 100px; margin-bottom: 20px; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5)); }
+        .critter-name { font-size: 24px; font-weight: 800; margin: 5px 0; }
+        .rarity-tag { background-color: #9b59b6; padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 14px; letter-spacing: 1px; }
+
+        /* PANEL PROFESOR HOST */
+        .host-panel { background: var(--box-bg-light); color: var(--text-dark); padding: 30px; border-radius: 24px; width: 380px; height: 340px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: space-between; }
+        .host-title { font-size: 26px; font-weight: 800; color: var(--purple-main); margin: 0; }
+        .host-btn { background-color: var(--btn-blue); color: white; border: none; padding: 16px; font-size: 20px; font-weight: 900; border-radius: 14px; cursor: pointer; box-shadow: 0 5px 0 #2980b9; }
+
+        /* DESTELLO NEXO CELESTIAL */
+        .nexo-celestial {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, var(--celestial-gold) 0%, var(--celestial-green) 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 30px var(--celestial-gold), 0 0 60px var(--celestial-green);
+            cursor: pointer;
+            animation: flyAcross 4s linear infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+            color: #1d1447;
+            border: 3px solid white;
+            z-index: 100;
+        }
+
+        /* ==========================================================================
+           2. ESTILOS DE LAS PANTALLAS ESPECÍFICAS
+           ========================================================================== */
+        /* TIENDA Y MERCADO */
+        .shop-grid, .trade-grid { display: flex; gap: 30px; justify-content: center; width: 100%; max-width: 1100px; padding: 40px; }
+        .box-card, .trade-zone { background: rgba(255,255,255,0.06); border: 3px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 30px; width: 260px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        .box-icon { font-size: 70px; margin-bottom: 15px; }
+        .open-btn, .trade-action-btn { background: var(--btn-green); color: white; border: none; padding: 12px 30px; font-size: 18px; font-weight: 800; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 0 #27ae60; width: 100%; }
+
+        /* MERCADO TRADING TRATO INTERNO */
+        .trade-grid { width: 900px; background: rgba(15,10,36,0.8); border-radius: 24px; border: 2px solid rgba(255,255,255,0.1); align-items: stretch; padding: 25px; }
+        .trade-zone { width: 45%; background: rgba(0,0,0,0.3); }
+        .trade-divider { display: flex; align-items: center; font-size: 32px; font-weight: 900; color: var(--celestial-gold); }
+        .item-row { background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; margin: 10px 0; font-weight: bold; text-align: left; }
+
+        /* DIMENSIÓN OSCURA & PREGUNTAS */
+        .dark-dim-body { display: flex; justify-content: center; align-items: center; height: 100%; width: 100%; background: radial-gradient(circle, #111e25 0%, #05030f 100%); }
+        .game-card { background-color: rgba(15, 10, 36, 0.9); border: 3px solid var(--celestial-green); border-radius: 30px; width: 680px; padding: 40px; box-shadow: 0 0 30px rgba(46, 196, 182, 0.3); text-align: center; }
+        .streak-container { display: flex; justify-content: center; gap: 8px; margin-bottom: 30px; }
+        .streak-dot { width: 40px; height: 40px; background-color: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: rgba(255,255,255,0.4); }
+        .streak-dot.active { background-color: var(--celestial-green); color: #000; box-shadow: 0 0 10px var(--celestial-green); }
+        .streak-dot.current { background-color: var(--celestial-gold); color: #000; box-shadow: 0 0 10px var(--celestial-gold); animation: pulseCurrent 0.6s infinite alternate; }
+        .question-box { font-size: 28px; font-weight: 800; margin-bottom: 35px; }
+        .answers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .answer-btn { background-color: #161035; border: 3px solid rgba(255,255,255,0.1); color: white; padding: 20px; font-size: 20px; font-weight: 700; border-radius: 14px; cursor: pointer; box-shadow: 0 5px 0 rgba(0,0,0,0.3); }
+        .ans-1 { border-color: #e74c3c; } .ans-2 { border-color: #3498db; } .ans-3 { border-color: #2ecc71; } .ans-4 { border-color: #f1c40f; }
+
+        /* RECOMPENSA UNBOXING REY CELESTIAL */
+        .reward-view { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; position: relative; }
+	.sunburst-bg { position: absolute; width: 1200px; height: 1200px; background: repeating-conic-gradient(from 0deg, rgba(46, 196, 182, 0.05) 0deg 15deg, transparent 15deg 30deg, rgba(241, 196, 15, 0.05) 30deg 45deg, transparent 45deg 60deg); animation: rotateSunburst 25s linear infinite; z-index: 1; }
+.reward-card { background: rgba(15, 10, 36, 0.95); border: 4px solid var(--celestial-gold); border-radius: 28px; width: 260px; height: 340px; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 0 40px rgba(241, 196, 15, 0.3); z-index: 10; animation: floatCard 3s ease-in-out infinite alternate; }
+.pixel-squid { font-size: 110px; margin-bottom: 15px; animation: squidGlitch 0.5s steps(2) infinite; filter: drop-shadow(0 0 15px #00f2fe); }
+/* MODO MERCADO NEGRO (PARTIDA) */
+.blackmarket-body { display: flex; flex-direction: column; height: 100%; }
+.bm-top { height: 70px; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; border-bottom: 2px solid #fd9644; }
+.bm-main { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+.safes-flex { display: flex; gap: 30px; }
+.safe-box { background: rgba(20,15,45,0.9); border: 4px solid #485460; border-radius: 20px; width: 200px; height: 260px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: all 0.2s ease; }
+.safe-box:hover { transform: translateY(-10px); border-color: var(--celestial-gold); box-shadow: 0 10px 20px rgba(243, 156, 18, 0.3); }
+.bm-footer { background: rgba(0,0,0,0.5); padding: 12px; text-align: center; color: #2ec4b6; font-weight: bold; }
+/* ==========================================================================
+3. ANIMACIONES INTERNAS EN CSS
+========================================================================== */
+@keyframes borderGlow { 0% { box-shadow: 0 0 15px #9b59b6; } 100% { box-shadow: 0 0 35px #f1c40f; border-color: #f1c40f; } }
+@keyframes macarenaDance { 0% { transform: rotate(-4deg); } 100% { transform: rotate(4deg) translateY(-8px); } }
+@keyframes pulseCurrent { 0% { transform: scale(1); } 100% { transform: scale(1.08); } }
+@keyframes rotateSunburst { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes floatCard { 0% { transform: translateY(0px); } 100% { transform: translateY(-15px); } }
+@keyframes flyAcross { 0% { top: 85%; left: -10%; } 50% { top: 25%; left: 45%; } 100% { top: -10%; left: 110%; } }
+@keyframes squidGlitch { 0% { transform: skewX(-3deg); filter: drop-shadow(2px 0 0 #ff007f); } 100% { transform: skewX(3deg) scale(1.02); filter: drop-shadow(-2px 0 0 #00f2fe); } }
+
+
+🏠 Menú Base
+🛒 Ver Tienda
+🔄 Intercambio P2P
+🌌 Juego Secreto (Preguntas)
+🎁 Premio Unboxing
+💰 Partida Mercado Negro
+CRITTERS WORLD
+⭐ Nivel 42💰 15,420
+
+
+
+🟢 JUGAR EN CLASE
+🎒 Mis Critters
+🛒 Tienda de Cajas
+🔄 Mercado P2P (Trading)
+
+¡PULSA!
+🧟‍♂️
+Franki Macarena
+INQUEBRANTABLE
+
+
+
+Panel del Profesor
+Lanza un set de preguntas académico para tu aula. Puedes congelar el mercado de intercambios cuando comience el examen.
+
+Alojar Partida (Host)
+
+
+
+🛒 TIENDA DE CRITTERS
+💰 15,420 Monedas
+
+
+
+
+🚀
+Caja Espacial
+Coste: 20 Monedas
+ABRIR
+
+
+🏰
+Caja Medieval
+Coste: 15 Monedas
+ABRIR
+
+
+🧟‍♂️
+Regalo Creador
+Exclusivo: Solo 5
+RECLAMAR
+
+
+
+🔄 MERCADO DE TRADING DIRECTO
+Sala Protegida
+
+
+Comerciando con: Carlos99
+
+
+Tu Oferta
+🛸 OVNI Luminoso (Épico)
+🧑‍🚀 Astronauta (Común)
+
+⇄
+
+Oferta de Carlos99
+🕳️ Agujero Negro (Raro)
+👽 Alien Verde (P. Común)
+
+
+ACEPTAR TRATO SEGURO
+
+🌌 LA DIMENSIÓN OSCURA 🌌
+MUERTE SÚBITA: SIN FALLOS
+1
+2
+3
+4
+5
+6
+7
+
+¿Cuál es el planeta más grande de nuestro Sistema Solar?
+
+Marte
+Saturno
+Júpiter
+Neptuno
+
+
+
+¡CONSEGUIDO!
+Completaste las 7 preguntas de la Dimensión Oscura
+
+ Squid 🦑
+Calamar Pixelado
+ULTRA CELESTIAL
+Unidades: 34 / 50
+
+RECLAMAR AL INVENTARIO
+
+💰 MODO EN CLASE: EL MERCADO NEGRO
+🪙 2,450
+
+
+¡RESPUESTA ACADÉMICA CORRECTA!
+Elige una caja fuerte secreta del Mercado
+
+
+🗄️
+CAJA A
+
+
+🕵️‍♂️
+ROBAR BOTÍN
+
+
+📦
+CAJA C
+
+
+
+
+🛡️ HABILIDAD DE AVATAR (Marciano Fantasma 👽): Escudo pasivo activado contra intentos de robo de tus compañeros.
+
+
+function switchScreen(screenId) {
+// Oculta todas las pantallas
+const screens = document.querySelectorAll('.screen');
+screens.forEach(screen => screen.classList.remove('active'));
+// Muestra la seleccionada
+const targetScreen = document.getElementById(screenId);
+if (targetScreen) {
+targetScreen.classList.add('active');
+}
+}
+
